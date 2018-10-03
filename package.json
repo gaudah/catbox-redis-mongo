@@ -1,0 +1,17 @@
+{
+  "name": "catboxhapi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "catbox-mongodb": "^4.2.0",
+    "catbox-redis": "^4.2.2",
+    "hapi": "^17.6.0",
+    "mongoose": "^5.3.1"
+  }
+}
