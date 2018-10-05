@@ -1,0 +1,71 @@
+Server side caching using catbox-redis , catbox-mongo and default memory cache
+
+Hapi provides powerful, convenient server side caching via catbox. This tutorial section will help you understand how to use catbox.
+
+Catbox has two interfaces; client and policy.
+
+1) Client:=
+   Client is a low-level interface that allows you set/get key-value pairs. It is initialized with one of the available adapters: (Memory, Redis, mongoDB, Memcached, or Riak).
+
+   hapi initializes a default client using the catbox memory adapter. Let's see how we can define more clients.
+
+
+
+In our example, we've defined two catbox clients; mongoCache and redisCache. Including the default memory cache created by hapi, there are now three available cache clients. You can replace the default client by omitting the name property when registering a new cache client. partition tells the adapter how cache should be named ('catbox' by default). In the case of mongoDB, this becomes the database name and in the case of redis it is used as key prefix.
+
+
+2) Policy:=
+    Policy is a more high-level interface than Client. Following is a simple example of caching the result of adding two numbers together. The principles of this simple example can be applied to any situation where you want to cache the result of a function call, async or otherwise. server.cache(options) creates a new policy, which is then used in the route handler.
+
+
+
+Explanation of example:=
+If we hit GET /recommend/{name}/ then it will return the cached value w.r.t given key mentioned in query parameter.
+If we hit POST /recommend/{name}/ then it will set the cached value specified in payload with given key mentioned in query parameter.
+
+
+   In addition to partitions, there are segments that allow you to further isolate caches within one client partition. If you want to cache results from two different methods, you usually don't want mix the results together. In mongoDB adapters, segment represents a collection and in redis it's an additional prefix along with the partition option.
+
+   The default value for segment when server.cache() is called inside of a plugin will be '!pluginName'. When creating server methods, the segment value will be '#methodName'. If you have a use case for multiple policies sharing one segment there is a shared option available as well.
+
+   In 95% cases you will use server methods for caching purposes, because it reduces boilerplate to minimum
+But since it prefix the #methodname to a segment so when we try to fetch in mongodb := db.#sum.find() throws below error
+2018-10-03T13:15:25.680+0530 E QUERY    [js] SyntaxError: illegal character @(shell):1:3
+so i think it's better to use server.cache() because it allows us to set the userdefined segment.
+
+
+Purpose:=
+1)Server side caching via catbox
+2)Any situation where you want to cache the result of a function call, async or otherwise.
+
+Important Usecases:=
+1)To provide the faster response by fetching the result from cache.
+
+2)To manage the recommended products.
+  Example:=We have following products and if a customer search for only Mobile then he/she will immediately get the respected recommendations from cache instead of searching in db again and again.
+	   
+cache             products
+
+Mobile	   Mobile phone water proof protection
+	   Mobile phone dustproof protection
+           Mobile phone protection
+           Mobile dualsim
+           Mobile samsung
+           Mobile Motorola
+
+3)To manage the history of recently search product:=
+Example:=
+Customer has search for 5 products one after another.
+1)Mobile Motorola
+2)Pen
+3)Book
+4)Laptop
+5)Cloths
+Let say Customer is booking for Laptop.During the place of order his/her mind changed and now want to buy Cloths.In this usecase customer will search again in search bar.Instead we can store the history of recently search product in cache and allow them to buy the product.
+
+
+
+
+
+
+
